@@ -1,13 +1,37 @@
-import React from 'react';
-import './Cell.css';
+import React from "react";
+import "./Cell.css";
 
-interface CellProps {
-  // Your code here
-}
-
-const Cell: React.FC<CellProps> = (props: CellProps) => {
-  // Render cell with shape and color, use CSS to style based on shape and color.
-  return <></>
+type CardProps = {
+  image: string;
+  onClick: (id: number) => void;
+  id: number;
+  isInactive: boolean;
+  isFlipped: boolean;
+  isDisabled: boolean;
 };
+
+function Cell(props: CardProps) {
+  const back = "/images/back.jpg";
+
+  const handleClick = () => {
+    !props.isFlipped && !props.isDisabled && props.onClick(props.id);
+  };
+
+  return (
+    <div
+      className={`card ${props.isFlipped && "is-flipped"} ${
+        props.isInactive && "is-inactive"
+      }`}
+      onClick={handleClick}
+    >
+      <div className="card-face">
+        <img src={back} alt="card backside" />
+      </div>
+      <div className="card-face card-back-face">
+        <img src={props.image} alt="card" />
+      </div>
+    </div>
+  );
+}
 
 export default Cell;

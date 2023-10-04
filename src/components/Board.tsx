@@ -1,23 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import Cell from './Cell';
-import './Board.css';
+import { useEffect, useRef, useState } from "react";
+import Card from "./Cell";
+import "./Board.css";
+import React from "react";
 
-const Board: React.FC = () => {
-  // states...
+type BoardProps = {
+  cardIds: Array<number>;
+};
+
+function Board(props: BoardProps) {
+  const [openCards, setOpenCards] = useState<Array<number>>([]);
+  const [clearedCards, setClearedCards] = useState<Array<number>>([]);
+  const [shouldDisableAllCards, setShouldDisableAllCards] =
+    useState<boolean>(false);
+  const timeout = useRef<NodeJS.Timeout>(setTimeout(() => {}));
+
+  const disable = () => {
+    setShouldDisableAllCards(true);
+  };
+  const enable = () => {
+    setShouldDisableAllCards(false);
+  };
+
+  const evaluate = () => {
+    const [first, second] = openCards;
+    enable();
+    if ((first % 8) + 1 === (second % 8) + 1) {
+      setClearedCards((prev) => [...prev, first, second]);
+      setOpenCards([]);
+      return;
+    }
+    timeout.current = setTimeout(() => {
+      setOpenCards([]);
+    }, 500);
+  };
+
+  const handleCardClick = (id: number) => {
+    if (openCards.length === 1) {
+      setOpenCards((prev) => [...prev, id]);
+      disable();
+    } else {
+      clearTimeout(timeout.current);
+      setOpenCards([id]);
+    }
+  };
+
   useEffect(() => {
-    // Initialize the game board with random shapes and colors
-  }, []);
+    let timeout: NodeJS.Timeout = setTimeout(() => {});
+    if (openCards.length === 2) {
+      timeout = setTimeout(evaluate, 300);
+    }
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [openCards]);
 
-  const handleCellClick = (index: number) => {
-    // Reveal cell, check for matches, update game state, and handle game completion
+  const checkIsFlipped = (id: number) => {
+    return clearedCards.includes(id) || openCards.includes(id);
+  };
+
+  const checkIsInactive = (id: number) => {
+    return clearedCards.includes(id);
   };
 
   return (
-    <div className="board">
-      {/* Render each cell in the board */}
+    <div className={"board"}>
+      {props.cardIds.map((i) => {
+        return (
+          <Card
+            key={i}
+            image={`/images/${(i % 8) + 1}.png`}
+            id={i}
+            isDisabled={shouldDisableAllCards}
+            isInactive={checkIsInactive(i)}
+            isFlipped={checkIsFlipped(i)}
+            onClick={handleCardClick}
+          />
+        );
+      })}
     </div>
   );
-};
+}
 
 export default Board;
-
